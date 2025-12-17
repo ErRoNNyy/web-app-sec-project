@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moto Marketplace - Home</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <img src="/assets/icons/navbar_logo.png" alt="Moto Logo">
+            <span class="nav-brand-text">Moto Marketplace</span>
+        </a>
+        <div class="nav-links">
+            <a href="/" class="active">Home</a>
+            <a href="/marketplace">Marketplace</a>
+            <a href="/search">Search</a>
+            <a href="/tools">Services</a>
+            <span id="auth-links"></span>
+        </div>
+        <div class="nav-user" id="user-section" style="display: none;" onclick="toggleUserDropdown(event)">
+            <div class="nav-user-avatar">👤</div>
+            <div class="nav-user-info">
+                <div class="nav-user-greeting">Good Morning 👋</div>
+                <div class="nav-user-name" id="nav-username">Motor Hub User</div>
+            </div>
+            <div class="nav-user-dropdown" id="user-dropdown">
+                <a href="/profile">👤 Profile</a>
+                <a href="/dashboard">📊 Dashboard</a>
+                <a href="/cart">🛒 My Cart</a>
+                <div class="dropdown-divider"></div>
+                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="featured-section">
+            <div class="featured-header">
+                <h1 class="featured-title">Featured</h1>
+                <a href="/marketplace" class="see-all-link">See All</a>
+            </div>
+            
+            <div class="featured-content">
+                <div class="featured-info">
+                    <h2>H2R</h2>
+                    <p>The Ultimate Hyperbike Experience</p>
+                    <button class="btn-exclusive" onclick="window.location.href='/marketplace'">
+                        ⚡ EXCLUSIVE
+                    </button>
+                </div>
+                
+                <div class="featured-image-container">
+                    <img src="/assets/slider/slider_img3.png" alt="Kawasaki H2R" class="featured-image">
+                    <div class="auction-timer">
+                        <div class="auction-label">Auction ends in:</div>
+                        <div class="auction-time">
+                            <span id="hours">59</span>
+                            <span class="separator">:</span>
+                            <span id="minutes">59</span>
+                            <span class="separator">:</span>
+                            <span id="seconds">59</span>
+                        </div>
+                        <div class="time-labels">
+                            <span>Hours</span>
+                            <span>Minutes</span>
+                            <span>Seconds</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="carousel-dots">
+                <div class="carousel-dot active"></div>
+                <div class="carousel-dot"></div>
+                <div class="carousel-dot"></div>
+            </div>
+        </section>
+
+        <section class="brands-section">
+            <div class="brands-grid">
+                <div class="brand-card">
+                    <span class="brand-number">1</span>
+                    <div class="brand-logo">
+                        <img src="/assets/brands/brand1.png" alt="Yamaha">
+                    </div>
+                    <div class="brand-name">Yamaha</div>
+                    <div class="brand-sales">Total Sales: <span>34.53 ETH</span></div>
+                </div>
+                <div class="brand-card">
+                    <span class="brand-number">2</span>
+                    <div class="brand-logo">
+                        <img src="/assets/brands/brand2.png" alt="Honda">
+                    </div>
+                    <div class="brand-name">Honda</div>
+                    <div class="brand-sales">Total Sales: <span>34.53 ETH</span></div>
+                </div>
+                <div class="brand-card">
+                    <span class="brand-number">3</span>
+                    <div class="brand-logo">
+                        <img src="/assets/brands/brand3.png" alt="Kawasaki">
+                    </div>
+                    <div class="brand-name">Kawasaki</div>
+                    <div class="brand-sales">Total Sales: <span>34.53 ETH</span></div>
+                </div>
+                <div class="brand-card">
+                    <span class="brand-number">4</span>
+                    <div class="brand-logo">
+                        <img src="/assets/brands/brand4.png" alt="Suzuki">
+                    </div>
+                    <div class="brand-name">Suzuki</div>
+                    <div class="brand-sales">Total Sales: <span>34.53 ETH</span></div>
+                </div>
+                <div class="brand-card">
+                    <span class="brand-number">5</span>
+                    <div class="brand-logo">
+                        <img src="/assets/brands/brand5.png" alt="BMW">
+                    </div>
+                    <div class="brand-name">BMW</div>
+                    <div class="brand-sales">Total Sales: <span>34.53 ETH</span></div>
+                </div>
+                <div class="brand-card">
+                    <span class="brand-number">6</span>
+                    <div class="brand-logo">
+                        <img src="/assets/brands/brand6.png" alt="Ducati">
+                    </div>
+                    <div class="brand-name">Ducati</div>
+                    <div class="brand-sales">Total Sales: <span>34.53 ETH</span></div>
+                </div>
+                <div class="brand-card">
+                    <span class="brand-number">7</span>
+                    <div class="brand-logo">
+                        <img src="/assets/brands/brand7.png" alt="Harley">
+                    </div>
+                    <div class="brand-name">Harley</div>
+                    <div class="brand-sales">Total Sales: <span>34.53 ETH</span></div>
+                </div>
+                <div class="brand-card">
+                    <span class="brand-number">8</span>
+                    <div class="brand-logo">
+                        <img src="/assets/brands/brand8.png" alt="More">
+                    </div>
+                    <div class="brand-name">More</div>
+                    <div class="brand-sales">Total Sales: <span>34.53 ETH</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="deals-section">
+            <div class="section-header">
+                <h2 class="section-title">Top Deals</h2>
+                <a href="/marketplace" class="see-all-link">See All</a>
+            </div>
+            
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">All</button>
+                <button class="filter-tab" data-filter="yamaha">Yamaha</button>
+                <button class="filter-tab" data-filter="honda">Honda</button>
+                <button class="filter-tab" data-filter="kawasaki">Kawasaki</button>
+                <button class="filter-tab" data-filter="suzuki">Suzuki</button>
+                <button class="filter-tab" data-filter="harley">Harley</button>
+                <button class="filter-tab" data-filter="ducati">Ducati</button>
+                <button class="filter-tab" data-filter="bmw">BMW</button>
+            </div>
+            
+            <div class="products-grid" id="products-container">
+                <div class="loading">Loading motorcycles...</div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <a href="/" class="nav-brand">
+                    <img src="/assets/icons/navbar_logo.png" alt="Moto Logo">
+                    <span class="nav-brand-text">Moto Marketplace</span>
+                </a>
+                <p class="footer-description">
+                    Moto marketplace UI created with Figma.<br>
+                    Join our community
+                </p>
+                <div class="footer-social">
+                    <a href="#" class="social-icon">📱</a>
+                    <a href="#" class="social-icon">▶️</a>
+                    <a href="#" class="social-icon">🐦</a>
+                    <a href="#" class="social-icon">📷</a>
+                </div>
+            </div>
+            
+            <div class="footer-links">
+                <h4>Explore</h4>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/marketplace">Marketplace</a></li>
+                    <li><a href="/tools">Services</a></li>
+                    <li><a href="/upload">Rentals</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-newsletter">
+                <h4>Join Our Weekly Digest</h4>
+                <p>Get exclusive promotions & updates straight to your inbox.</p>
+                <form class="newsletter-form" id="newsletter-form">
+                    <input type="email" class="newsletter-input" placeholder="Enter your email here">
+                    <button type="submit" class="newsletter-btn">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            © Moto Market. All rights reserved.
+        </div>
+    </footer>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        const motorcycles = [
+            { id: 1, name: 'BMW C400X', category: 'Motorcycles', price: '4,000,000', brand: 'bmw' },
+            { id: 2, name: 'Vespa GTS 300', category: 'Motorcycles', price: '3,500,000', brand: 'other' },
+            { id: 3, name: 'Yamaha XMAX 300', category: 'Motorcycles', price: '2,500,000', brand: 'yamaha' },
+            { id: 4, name: 'Honda Forza 350', category: 'Motorcycles', price: '2,800,000', brand: 'honda' },
+            { id: 5, name: 'Kawasaki H2R', category: 'Motorcycles', price: '15,800,000', brand: 'kawasaki' },
+            { id: 6, name: 'Kawasaki H2R', category: 'Motorcycles', price: '15,800,000', brand: 'kawasaki' },
+            { id: 7, name: 'Honda CRF', category: 'Motorcycles', price: '2,500,000', brand: 'honda' },
+            { id: 8, name: 'Honda NT1100 DCT', category: 'Motorcycles', price: '10,000,000', brand: 'honda' }
+        ];
+
+        function loadProducts(filter = 'all') {
+            const container = document.getElementById('products-container');
+            let filtered = filter === 'all' ? motorcycles : motorcycles.filter(m => m.brand === filter);
+            
+            container.innerHTML = filtered.map((moto, index) => `
+                <a href="/product/${moto.id}" class="product-card-link">
+                    <div class="product-card" data-brand="${moto.brand}">
+                        <span class="product-number">${index + 1}</span>
+                        <div class="product-image">
+                            <img src="/assets/icons/moto_icon_gray.png" alt="${moto.name}">
+                        </div>
+                        <h3 class="product-name">${moto.name}</h3>
+                        <div class="product-info">
+                            <span class="product-category">${moto.category}</span>
+                            <span class="product-price">₸ ${moto.price}</span>
+                        </div>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                loadProducts(tab.dataset.filter);
+            });
+        });
+
+        function updateTimer() {
+            let hours = parseInt(document.getElementById('hours').textContent);
+            let minutes = parseInt(document.getElementById('minutes').textContent);
+            let seconds = parseInt(document.getElementById('seconds').textContent);
+            
+            seconds--;
+            if (seconds < 0) {
+                seconds = 59;
+                minutes--;
+                if (minutes < 0) {
+                    minutes = 59;
+                    hours--;
+                    if (hours < 0) {
+                        hours = 59;
+                    }
+                }
+            }
+            
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+        }
+
+        function toggleUserDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('user-dropdown');
+            const userSection = document.getElementById('user-section');
+            if (dropdown && !userSection.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        function logout() {
+            fetch('/api/logout', { method: 'POST' })
+                .then(() => window.location.href = '/login');
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadProducts();
+            setInterval(updateTimer, 1000);
+            
+            const authData = await checkAuth();
+            if (authData.isAuthenticated) {
+                document.getElementById('user-section').style.display = 'flex';
+                document.getElementById('nav-username').textContent = authData.user.username;
+            }
+        });
+
+        document.getElementById('newsletter-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Thank you for subscribing!');
+        });
+    </script>
+</body>
+</html>

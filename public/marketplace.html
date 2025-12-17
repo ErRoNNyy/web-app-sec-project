@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace - Moto Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <img src="/assets/icons/navbar_logo.png" alt="Moto Logo">
+            <span class="nav-brand-text">Moto Marketplace</span>
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/marketplace" class="active">Marketplace</a>
+            <a href="/search">Search</a>
+            <a href="/tools">Services</a>
+            <span id="auth-links"></span>
+        </div>
+        <div class="nav-user" id="user-section" style="display: none;" onclick="toggleUserDropdown(event)">
+            <div class="nav-user-avatar">👤</div>
+            <div class="nav-user-info">
+                <div class="nav-user-greeting">Good Morning 👋</div>
+                <div class="nav-user-name" id="nav-username">Motor Hub User</div>
+            </div>
+            <div class="nav-user-dropdown" id="user-dropdown">
+                <a href="/profile">👤 Profile</a>
+                <a href="/dashboard">📊 Dashboard</a>
+                <a href="/cart">🛒 My Cart</a>
+                <div class="dropdown-divider"></div>
+                <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="browse-header">
+            <h1>Browse Marketplace</h1>
+            <p>Browse through more than 50,000 motorcycle parts and accessories in our marketplace.</p>
+            
+            <div class="marketplace-search">
+                <input type="text" id="search-input" placeholder="Search motorcycles, parts and etc.">
+                <button type="button" class="search-btn" onclick="searchProducts()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="category-filters">
+                <button class="category-btn active" data-category="all">
+                    <span class="check-icon">✓</span> All
+                </button>
+                <button class="category-btn" data-category="motorcycles">
+                    🏍️ Motorcycles
+                </button>
+                <button class="category-btn" data-category="parts">
+                    ⚙️ Parts
+                </button>
+                <button class="category-btn" data-category="accessories">
+                    ⭐ Accessories
+                </button>
+            </div>
+        </section>
+
+        <section class="marketplace-section">
+            <div class="marketplace-header">
+                <h2>Marketplace</h2>
+                <div class="marketplace-actions">
+                    <button class="action-btn filter-btn" onclick="openFilterModal()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="4" y1="6" x2="20" y2="6"></line>
+                            <line x1="4" y1="12" x2="20" y2="12"></line>
+                            <line x1="4" y1="18" x2="20" y2="18"></line>
+                        </svg>
+                    </button>
+                    <button class="action-btn cart-btn" onclick="window.location.href='/dashboard'">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="products-grid" id="products-container">
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <a href="/" class="nav-brand">
+                    <img src="/assets/icons/navbar_logo.png" alt="Moto Logo">
+                    <span class="nav-brand-text">Moto Marketplace</span>
+                </a>
+                <p class="footer-description">
+                    Moto marketplace UI created with Figma.<br>
+                    Join our community
+                </p>
+                <div class="footer-social">
+                    <a href="#" class="social-icon">👥</a>
+                    <a href="#" class="social-icon">▶️</a>
+                    <a href="#" class="social-icon">🐦</a>
+                    <a href="#" class="social-icon">📷</a>
+                </div>
+            </div>
+            
+            <div class="footer-links">
+                <h4>Explore</h4>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/marketplace">Marketplace</a></li>
+                    <li><a href="/tools">Services</a></li>
+                    <li><a href="/upload">Rentals</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-newsletter">
+                <h4>Join Our Weekly Digest</h4>
+                <p>Get exclusive promotions & updates straight to your inbox.</p>
+                <form class="newsletter-form" id="newsletter-form">
+                    <input type="email" class="newsletter-input" placeholder="Enter your email here">
+                    <button type="submit" class="newsletter-btn">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            © Moto Market. All rights reserved.
+        </div>
+    </footer>
+
+    <div class="filter-modal" id="filterModal">
+        <div class="filter-content">
+            <div class="filter-header">
+                <button class="filter-clear" onclick="clearFilters()">Clear All</button>
+                <h3>Filters</h3>
+                <button class="filter-apply" onclick="applyFilters()">Apply</button>
+            </div>
+
+            <div class="filter-section">
+                <h4>Price Range</h4>
+                <div class="price-range">
+                    <div class="price-labels">
+                        <span class="price-min">₸ 0</span>
+                        <span class="price-max">₸ 15 000 000</span>
+                    </div>
+                    <input type="range" id="priceRange" min="0" max="15000000" value="15000000" class="price-slider">
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h4>Accessory Type</h4>
+                <div class="accessory-tags">
+                    <button class="tag-btn active" data-tag="helmets">Helmets</button>
+                    <button class="tag-btn" data-tag="jackets">Jackets</button>
+                    <button class="tag-btn" data-tag="gloves">Gloves</button>
+                    <button class="tag-btn" data-tag="boots">Boots</button>
+                    <button class="tag-btn" data-tag="bags">Bags</button>
+                    <button class="tag-btn" data-tag="electronics">Electronics</button>
+                    <button class="tag-btn" data-tag="security">Security</button>
+                    <button class="tag-btn" data-tag="tools">Tools</button>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h4>Sort by</h4>
+                <div class="sort-options">
+                    <label class="sort-option">
+                        <input type="radio" name="sort" value="low-high" checked>
+                        <span>Price: Low to High</span>
+                    </label>
+                    <label class="sort-option">
+                        <input type="radio" name="sort" value="high-low">
+                        <span>Price: High to Low</span>
+                    </label>
+                    <label class="sort-option">
+                        <input type="radio" name="sort" value="newest">
+                        <span>Newest First</span>
+                    </label>
+                    <label class="sort-option">
+                        <input type="radio" name="sort" value="popular">
+                        <span>Most Popular</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        function openFilterModal() {
+            document.getElementById('filterModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFilterModal() {
+            document.getElementById('filterModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function clearFilters() {
+            document.getElementById('priceRange').value = 15000000;
+            document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.tag-btn').classList.add('active');
+            document.querySelector('input[name="sort"][value="low-high"]').checked = true;
+        }
+
+        function applyFilters() {
+            // Apply filter logic here
+            closeFilterModal();
+            loadProducts(currentCategory);
+        }
+
+        document.getElementById('filterModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('filterModal')) {
+                closeFilterModal();
+            }
+        });
+
+        document.querySelectorAll('.tag-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+            });
+        });
+
+        document.getElementById('priceRange').addEventListener('input', (e) => {
+            document.querySelector('.price-max').textContent = '₸ ' + parseInt(e.target.value).toLocaleString();
+        });
+
+        const allProducts = [
+            { id: 1, name: 'BMW C400X', category: 'motorcycles', price: '4,000,000' },
+            { id: 2, name: 'Vespa GTS 300', category: 'motorcycles', price: '3,500,000' },
+            { id: 3, name: 'Yamaha XMAX 300', category: 'motorcycles', price: '2,500,000' },
+            { id: 4, name: 'Honda Forza 350', category: 'motorcycles', price: '2,800,000' },
+            { id: 5, name: 'Kawasaki H2R', category: 'motorcycles', price: '15,800,000' },
+            { id: 6, name: 'Kawasaki H2R', category: 'motorcycles', price: '15,800,000' },
+            { id: 7, name: 'Honda CRF', category: 'motorcycles', price: '2,500,000' },
+            { id: 8, name: 'Honda NT1100 DCT', category: 'motorcycles', price: '10,000,000' },
+            { id: 9, name: 'Brake Pads Set', category: 'parts', price: '50,000' },
+            { id: 10, name: 'Oil Filter', category: 'parts', price: '25,000' },
+            { id: 11, name: 'Helmet Pro', category: 'accessories', price: '150,000' },
+            { id: 12, name: 'Riding Gloves', category: 'accessories', price: '45,000' }
+        ];
+
+        let currentCategory = 'all';
+
+        function loadProducts(category = 'all', searchTerm = '') {
+            const container = document.getElementById('products-container');
+            let filtered = allProducts;
+            
+            if (category !== 'all') {
+                filtered = filtered.filter(p => p.category === category);
+            }
+            
+            if (searchTerm) {
+                filtered = filtered.filter(p => 
+                    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<p class="no-results">No products found</p>';
+                return;
+            }
+            
+            container.innerHTML = filtered.map((product, index) => `
+                <div class="product-card" data-category="${product.category}" onclick="window.location.href='/product/${product.id}'">
+                    <span class="product-number">${index + 1}</span>
+                    <div class="product-image">
+                        <img src="/assets/icons/moto_icon_gray.png" alt="${product.name}">
+                    </div>
+                    <h3 class="product-name">${product.name}</h3>
+                    <div class="product-info">
+                        <span class="product-category">Motorcycles</span>
+                        <span class="product-price">₸ ${product.price}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategory = btn.dataset.category;
+                loadProducts(currentCategory);
+            });
+        });
+
+        function searchProducts() {
+            const searchTerm = document.getElementById('search-input').value;
+            loadProducts(currentCategory, searchTerm);
+        }
+
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
+        });
+
+        function toggleUserDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('user-dropdown');
+            const userSection = document.getElementById('user-section');
+            if (dropdown && !userSection.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        function logout() {
+            fetch('/api/logout', { method: 'POST' })
+                .then(() => window.location.href = '/login');
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadProducts();
+            
+            const authData = await checkAuth();
+            if (authData.isAuthenticated) {
+                document.getElementById('user-section').style.display = 'flex';
+                document.getElementById('nav-username').textContent = authData.user.username;
+            }
+        });
+
+        document.getElementById('newsletter-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Thank you for subscribing!');
+        });
+    </script>
+
+    <style>
+        .browse-header {
+            margin-bottom: 2rem;
+        }
+
+        .browse-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .browse-header p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .marketplace-search {
+            display: flex;
+            background-color: var(--bg-secondary);
+            border-radius: 20px;
+            padding: 0.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .marketplace-search input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .marketplace-search input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .marketplace-search input:focus {
+            outline: none;
+        }
+
+        .search-btn {
+            background: transparent;
+            border: none;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .category-filters {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.25rem;
+            border-radius: 20px;
+            background-color: var(--bg-card);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .category-btn:hover {
+            background-color: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .category-btn.active {
+            background-color: var(--accent-yellow);
+            color: var(--bg-primary);
+            border-color: var(--accent-yellow);
+        }
+
+        .category-btn .check-icon {
+            display: none;
+        }
+
+        .category-btn.active .check-icon {
+            display: inline;
+        }
+
+        .marketplace-section {
+            margin-top: 2rem;
+        }
+
+        .marketplace-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .marketplace-header h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .marketplace-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .action-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .products-grid .product-card {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            border: 1px solid var(--card-border);
+            cursor: pointer;
+        }
+
+        .filter-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .filter-modal.active {
+            display: flex;
+        }
+
+        .filter-content {
+            background-color: var(--bg-primary);
+            width: 100%;
+            max-width: 350px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .filter-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .filter-clear {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .filter-apply {
+            background: none;
+            border: none;
+            color: var(--accent-green);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .filter-section {
+            margin-bottom: 2rem;
+        }
+
+        .filter-section h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .price-range {
+            padding: 0 0.5rem;
+        }
+
+        .price-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .price-min {
+            color: #ef4444;
+        }
+
+        .price-max {
+            color: var(--text-secondary);
+        }
+
+        .price-slider {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            background: linear-gradient(to right, #ef4444 0%, #ef4444 100%);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .price-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .accessory-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .tag-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tag-btn:hover {
+            background-color: var(--bg-card-hover);
+        }
+
+        .tag-btn.active {
+            background-color: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .sort-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .sort-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            padding: 0.5rem 0;
+        }
+
+        .sort-option input[type="radio"] {
+            display: none;
+        }
+
+        .sort-option span {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .sort-option input[type="radio"]:checked + span {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .sort-option::before {
+            content: '';
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--text-muted);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .sort-option:has(input:checked)::before {
+            border-color: var(--accent-green);
+            background: radial-gradient(var(--accent-green) 40%, transparent 45%);
+        }
+    </style>
+</body>
+</html>
+

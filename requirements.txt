@@ -1,0 +1,174 @@
+Final Project: Web Application Security
+1. Overview
+In this final project, each team will create a vulnerable web application, simulate real-world attacks, and implement defenses to protect the application from security threats. The goal is to demonstrate a thorough understanding of common web application vulnerabilities, how to detect and mitigate them, and the overall security of the application.
+Each group will develop a web application, intentionally incorporate vulnerabilities, then use various security testing tools to identify and exploit these weaknesses. The project will involve documenting the vulnerabilities, analyzing potential impacts, and implementing security measures to defend against them. The project will conclude with a demo of the secure application and a detailed report.
+2. Group Composition and Roles
+Each group will consist of two members, with the following roles:
+Group 1:
+●	Web Application Developer:
+
+○	Develops the vulnerable web application.
+
+○	Incorporates intentional vulnerabilities from the OWASP Top 10 list (SQL Injection, Cross-Site Scripting, etc.).
+
+○	Implements basic security features after vulnerabilities are identified (e.g., input validation, access control).
+
+●	Security Analyst:
+
+○	Tests the web application for common security vulnerabilities.
+
+○	Uses tools like OWASP ZAP, Burp Suite, or Nikto to scan for issues.
+
+○	Provides recommendations for securing the application and ensures that vulnerabilities are properly mitigated.
+
+●	Web Application Developer:
+
+○	Responsible for implementing fixes and security enhancements after vulnerabilities are discovered.
+
+○	Develops secure coding practices to defend against attacks.
+
+●	Security Analyst:
+
+○	Performs a detailed vulnerability assessment using penetration testing techniques.
+
+○	Prepares the report documenting each vulnerability, the severity, and the risk mitigation strategies.
+
+3. Project Requirements
+Each group is tasked with creating a vulnerable web application and defending it from at least three types of attacks. These attacks can be simulated using automated tools or manual testing techniques.
+Steps to follow:
+●	Develop a Vulnerable Web Application:
+
+○	Choose a framework or CMS (e.g., Node.js + Express, Flask, PHP, Django) and deliberately incorporate vulnerabilities like SQL Injection, Cross-Site Scripting (XSS), or insecure direct object references (IDOR).
+
+●	Simulate Attacks:
+
+○	Use tools like Burp Suite, OWASP ZAP, or Nikto to scan the application for common vulnerabilities.
+
+○	Manually test for issues like authentication bypass, session management flaws, and unsanitized input.
+
+●	Identify Vulnerabilities:
+
+○	For each identified vulnerability, document its description, potential impact, and the exploited risk.
+
+○	Create a vulnerability list and assign a severity level (Critical, High, Medium, Low).
+
+●	Implement Security Measures:
+
+○	After vulnerabilities are identified, the team will implement countermeasures to secure the application (e.g., input validation, escaping output, CSRF protection, secure authentication mechanisms).
+
+4. Types of Attacks to Simulate
+Each team must simulate at least three different attacks from the following list:
+●	SQL Injection: Exploit an unsecured query that is vulnerable to SQL injection.
+
+●	Cross-Site Scripting (XSS): Inject a malicious script into a vulnerable form or search functionality.
+
+●	Cross-Site Request Forgery (CSRF): Trick an authenticated user into making an unwanted request.
+
+●	Broken Authentication: Bypass authentication mechanisms using weak or predictable credentials.
+
+●	Insecure Direct Object References (IDOR): Access unauthorized data by manipulating URL parameters.
+
+●	File Upload Vulnerabilities: Allow the upload of malicious files (e.g., a web shell).
+
+●	Command Injection: Exploit unsanitized input to execute arbitrary commands on the server.
+
+●	Session Hijacking: Steal an active session using session tokens or cookies.
+
+5. Tools and Techniques
+Security Tools:
+●	OWASP ZAP: An open-source web application scanner for discovering security vulnerabilities.
+
+●	Burp Suite: A powerful tool for finding security weaknesses in web applications through manual and automated testing.
+
+●	Nikto: A web server scanner that tests for common vulnerabilities.
+
+●	SQLmap: A tool to detect and exploit SQL Injection vulnerabilities.
+
+●	Wireshark: For sniffing network traffic to discover data leaks or session hijacking.
+
+6. Development and Security Workflow
+1. Development:
+●	Create Web Application: The web application should be basic but functional, and incorporate common security flaws.
+
+●	Use vulnerable coding practices to implement OWASP Top 10 vulnerabilities in the application.
+
+2. Penetration Testing:
+●	Manual Testing: Identify vulnerabilities by inspecting code, testing form fields, and manipulating URLs.
+
+●	Automated Scans: Use security testing tools to scan for vulnerabilities.
+
+●	Document each vulnerability with its details and severity level.
+
+3. Fixing Vulnerabilities:
+●	After vulnerabilities are found, use best practices to mitigate them.
+
+●	Implement parameterized queries for SQL Injection, content security policies for XSS, and token validation for CSRF attacks.
+
+4. Final Security Review:
+●	Test the application again after the fixes have been applied to ensure that the vulnerabilities are properly mitigated.
+
+7. Deliverables
+Each group will submit the following:
+1.	Vulnerable Web Application:
+
+○	A link to or an archive of the web application (e.g., hosted on Heroku, GitHub, or shared via Google Drive).
+
+2.	Vulnerability Assessment Report:
+
+○	A detailed report listing each vulnerability found, its risk, and a description of the exploitation method.
+
+○	A severity rating and impact analysis of each vulnerability.
+
+○	Suggestions for fixing and preventing future occurrences.
+
+3.	Security Fixes Documentation:
+
+○	A list of actions taken to secure the application (e.g., adding input sanitization, secure cookie flags, session expiration).
+
+4.	Source Code:
+
+○	The full source code of the web application, including security enhancements made during the project.
+
+5.	Presentation:
+
+○	A 10-12 minute demo that shows the web app with vulnerabilities, the attack simulation, the vulnerabilities exploited, and the security measures implemented to defend the app.
+
+8. Final Report Structure
+The final report should include:
+●	Title Page: Group name, members, roles, date.
+
+●	Executive Summary: High-level summary of the findings and actions taken to secure the app.
+
+●	Main Body:
+
+○	Overview of the web app and vulnerabilities.
+
+○	Detailed vulnerability analysis and attack simulation results.
+
+○	Remediation steps and how each vulnerability was mitigated.
+
+●	Conclusion: Summary of lessons learned and recommendations for securing future web applications.
+
+●	Appendices: Include logs, source code, vulnerability scans, and any relevant materials.
+
+9. Presentation and Defense
+Each group will present their project in a 10–12 minute live demo. The demo should cover:
+●	A quick overview of the web application.
+
+●	The vulnerabilities found and how they were exploited.
+
+●	How the vulnerabilities were mitigated and the impact of those fixes.
+
+●	The overall security improvement after implementing the fixes.
+
+10. Safety and Ethics
+●	All testing must be done in a controlled environment. Do not use real-world applications or services for testing.
+
+●	Backup the application regularly and ensure you have the ability to restore it after each round of testing.
+
+11. Tools and Recommendations
+●	Web Development: Node.js + Express, Flask, Django, or PHP.
+
+●	Security Testing: OWASP ZAP, Burp Suite, Nikto, SQLmap.
+
+●	Version Control: GitHub for source code management and collaboration.

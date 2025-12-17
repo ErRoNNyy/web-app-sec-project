@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search - Moto Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <img src="/assets/icons/navbar_logo.png" alt="Moto Logo">
+            <span class="nav-brand-text">Moto Marketplace</span>
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/search" class="active">Search</a>
+            <span id="auth-links"></span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="search-section">
+            <h1 class="section-title" style="margin-bottom: 1.5rem;">Search Motorcycles</h1>
+            <form id="search-form" class="search-form">
+                <div class="search-input-group">
+                    <input type="text" id="search-input" placeholder="Search for motorcycles..." required>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="deals-section">
+            <div class="section-header">
+                <h2 class="section-title">Results</h2>
+            </div>
+            <div id="results-container" class="products-grid">
+                <p class="no-results">Enter a search term to find motorcycles</p>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-bottom">
+            © Moto Market. All rights reserved.
+        </div>
+    </footer>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        document.getElementById('search-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const searchTerm = document.getElementById('search-input').value;
+            const container = document.getElementById('results-container');
+            
+            container.innerHTML = '<p class="loading">Searching...</p>';
+            
+            try {
+                const response = await fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`);
+                const posts = await response.json();
+                
+                if (posts.error) {
+                    container.innerHTML = `<p class="error">${posts.error}</p>`;
+                    return;
+                }
+                
+                if (posts.length === 0) {
+                    container.innerHTML = '<p class="no-results">No motorcycles found</p>';
+                    return;
+                }
+                
+                container.innerHTML = posts.map((post, index) => `
+                    <div class="product-card">
+                        <span class="product-number">${index + 1}</span>
+                        <div class="product-image">
+                            <img src="/assets/icons/moto_icon_gray.png" alt="${post.title}">
+                        </div>
+                        <h3 class="product-name">
+                            <a href="/post/${post.id}" style="color: inherit;">${post.title}</a>
+                        </h3>
+                        <div class="product-info">
+                            <span class="product-category">By ${post.username}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                container.innerHTML = '<p class="error">Search failed</p>';
+            }
+        });
+    </script>
+</body>
+</html>

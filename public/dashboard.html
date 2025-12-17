@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Moto Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <img src="/assets/icons/navbar_logo.png" alt="Moto Logo">
+            <span class="nav-brand-text">Moto Marketplace</span>
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/search">Search</a>
+            <a href="/upload">Upload</a>
+            <a href="/tools">Services</a>
+            <a href="/messages">Messages</a>
+            <a href="/profile">Profile</a>
+            <button id="logout-btn" class="btn btn-small btn-secondary">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>Welcome back, <span id="username-display">User</span>! 👋</h1>
+            <p>Manage your listings and track your sales</p>
+        </div>
+
+        <section class="dashboard-section">
+            <h2>Create New Listing</h2>
+            <form id="create-post-form">
+                <div class="form-group">
+                    <label for="post-title">Motorcycle Title</label>
+                    <input type="text" id="post-title" name="title" placeholder="e.g., Kawasaki Ninja H2R 2024" required>
+                </div>
+                <div class="form-group">
+                    <label for="post-content">Description</label>
+                    <textarea id="post-content" name="content" rows="5" placeholder="Describe your motorcycle..." required></textarea>
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="post-private" name="is_private">
+                    <label for="post-private">Make this listing private</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Listing</button>
+            </form>
+            <div id="post-message" class="message"></div>
+        </section>
+
+        <section class="dashboard-section">
+            <h2>All Listings</h2>
+            <div id="posts-container" class="posts-list">
+                <p class="loading">Loading listings...</p>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-bottom">
+            © Moto Market. All rights reserved.
+        </div>
+    </footer>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

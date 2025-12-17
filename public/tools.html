@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services - Moto Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <img src="/assets/icons/navbar_logo.png" alt="Moto Logo">
+            <span class="nav-brand-text">Moto Marketplace</span>
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/tools" class="active">Services</a>
+            <button id="logout-btn" class="btn btn-small btn-secondary">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>🛠️ Network Diagnostic Tools</h1>
+            <p>Test your network connectivity with our diagnostic services</p>
+        </div>
+
+        <section class="tool-section">
+            <h2>📡 Ping Tool</h2>
+            <form id="ping-form">
+                <div class="form-group">
+                    <label for="ping-host">Host / IP Address</label>
+                    <input type="text" id="ping-host" placeholder="e.g., google.com or 8.8.8.8" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Run Ping</button>
+            </form>
+            <div id="ping-result" class="tool-result"></div>
+        </section>
+
+        <section class="tool-section">
+            <h2>🔍 DNS Lookup (nslookup)</h2>
+            <form id="nslookup-form">
+                <div class="form-group">
+                    <label for="nslookup-domain">Domain Name</label>
+                    <input type="text" id="nslookup-domain" placeholder="e.g., google.com" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Run NSLookup</button>
+            </form>
+            <div id="nslookup-result" class="tool-result"></div>
+        </section>
+
+        <section class="tool-section">
+            <h2>🗺️ Traceroute</h2>
+            <form id="traceroute-form">
+                <div class="form-group">
+                    <label for="traceroute-host">Host / IP Address</label>
+                    <input type="text" id="traceroute-host" placeholder="e.g., google.com" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Run Traceroute</button>
+                <p style="color: var(--text-muted); margin-top: 0.5rem; font-size: 0.875rem;">⏱️ This may take a while...</p>
+            </form>
+            <div id="traceroute-result" class="tool-result"></div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-bottom">
+            © Moto Market. All rights reserved.
+        </div>
+    </footer>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const authData = await requireAuth();
+            if (!authData) return;
+        });
+
+        document.getElementById('ping-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const host = document.getElementById('ping-host').value;
+            const resultDiv = document.getElementById('ping-result');
+            
+            resultDiv.innerHTML = '<p class="loading">Running ping command...</p>';
+            resultDiv.classList.add('active');
+            
+            try {
+                const response = await fetch('/api/tools/ping', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ host })
+                });
+                
+                const data = await response.json();
+                displayResult(resultDiv, data);
+            } catch (err) {
+                resultDiv.innerHTML = '<p class="error">Failed to execute command</p>';
+            }
+        });
+
+        document.getElementById('nslookup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const domain = document.getElementById('nslookup-domain').value;
+            const resultDiv = document.getElementById('nslookup-result');
+            
+            resultDiv.innerHTML = '<p class="loading">Running nslookup...</p>';
+            resultDiv.classList.add('active');
+            
+            try {
+                const response = await fetch('/api/tools/nslookup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ domain })
+                });
+                
+                const data = await response.json();
+                displayResult(resultDiv, data);
+            } catch (err) {
+                resultDiv.innerHTML = '<p class="error">Failed to execute command</p>';
+            }
+        });
+
+        document.getElementById('traceroute-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const host = document.getElementById('traceroute-host').value;
+            const resultDiv = document.getElementById('traceroute-result');
+            
+            resultDiv.innerHTML = '<p class="loading">Running traceroute (this may take a while)...</p>';
+            resultDiv.classList.add('active');
+            
+            try {
+                const response = await fetch('/api/tools/traceroute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ host })
+                });
+                
+                const data = await response.json();
+                displayResult(resultDiv, data);
+            } catch (err) {
+                resultDiv.innerHTML = '<p class="error">Failed to execute command</p>';
+            }
+        });
+
+        function displayResult(container, data) {
+            container.innerHTML = `
+                <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                    <p><strong>Command executed:</strong> <code style="background: var(--bg-primary); padding: 0.25rem 0.5rem; border-radius: 4px;">${escapeHtml(data.command)}</code></p>
+                    <p><strong>Status:</strong> ${data.success ? '✅ Success' : '❌ Failed'}</p>
+                </div>
+                <pre class="command-output">${escapeHtml(data.output)}</pre>
+                ${data.error ? `<p class="error" style="margin-top: 1rem;">Error: ${escapeHtml(data.error)}</p>` : ''}
+            `;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

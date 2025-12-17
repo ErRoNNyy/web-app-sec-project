@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listing - Moto Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <img src="/assets/icons/navbar_logo.png" alt="Moto Logo">
+            <span class="nav-brand-text">Moto Marketplace</span>
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/search">Search</a>
+            <span id="auth-links"></span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <article id="post-container" class="dashboard-section">
+            <p class="loading">Loading listing...</p>
+        </article>
+
+        <section class="dashboard-section">
+            <h2>Comments</h2>
+            
+            <form id="comment-form" style="display: none; margin-bottom: 2rem;">
+                <div class="form-group">
+                    <textarea id="comment-content" placeholder="Write a comment..." rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Comment</button>
+            </form>
+            <p id="login-prompt" style="color: var(--text-muted); margin-bottom: 1.5rem;">
+                <a href="/login" style="color: var(--accent-green);">Login</a> to add comments
+            </p>
+            
+            <div id="comments-container" class="posts-list">
+                <p class="loading">Loading comments...</p>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-bottom">
+            © Moto Market. All rights reserved.
+        </div>
+    </footer>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/post.js"></script>
+</body>
+</html>

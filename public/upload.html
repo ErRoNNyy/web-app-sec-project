@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload - Moto Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <img src="/assets/icons/navbar_logo.png" alt="Moto Logo">
+            <span class="nav-brand-text">Moto Marketplace</span>
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/tools">Services</a>
+            <a href="/profile">Profile</a>
+            <button id="logout-btn" class="btn btn-small btn-secondary">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="dashboard-section">
+            <h2>Upload Motorcycle Images</h2>
+            <form id="upload-form" enctype="multipart/form-data">
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">🏍️</div>
+                    <p>Drag & drop motorcycle images here or click to select</p>
+                    <input type="file" id="file-input" name="file" hidden>
+                </div>
+                <div id="file-preview" class="file-preview"></div>
+                <button type="submit" class="btn btn-primary" disabled id="upload-btn">Upload File</button>
+            </form>
+            <div id="upload-message" class="message"></div>
+        </section>
+
+        <section class="dashboard-section">
+            <h2>My Uploaded Files</h2>
+            <div id="files-container" class="files-grid">
+                <p class="loading">Loading files...</p>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-bottom">
+            © Moto Market. All rights reserved.
+        </div>
+    </footer>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/upload.js"></script>
+</body>
+</html>

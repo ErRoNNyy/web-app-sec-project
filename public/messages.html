@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - Moto Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <img src="/assets/icons/navbar_logo.png" alt="Moto Logo">
+            <span class="nav-brand-text">Moto Marketplace</span>
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/messages" class="active">Messages</a>
+            <a href="/profile">Profile</a>
+            <button id="logout-btn" class="btn btn-small btn-secondary">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section class="dashboard-section">
+            <h2>Send New Message</h2>
+            <form id="message-form">
+                <div class="form-group">
+                    <label for="receiver-id">Recipient User ID</label>
+                    <input type="number" id="receiver-id" name="receiver_id" min="1" placeholder="Enter user ID" required>
+                </div>
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" name="subject" placeholder="Message subject">
+                </div>
+                <div class="form-group">
+                    <label for="content">Message</label>
+                    <textarea id="content" name="content" rows="4" placeholder="Write your message..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Message</button>
+            </form>
+            <div id="send-message" class="message"></div>
+        </section>
+
+        <section class="dashboard-section">
+            <h2>My Messages</h2>
+            <div id="messages-container" class="messages-list">
+                <p class="loading">Loading messages...</p>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-bottom">
+            © Moto Market. All rights reserved.
+        </div>
+    </footer>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/messages.js"></script>
+</body>
+</html>

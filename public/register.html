@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Moto Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .signup-page {
+            min-height: 100vh;
+            background-color: var(--bg-primary);
+        }
+
+        .signup-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: calc(100vh - 80px);
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        .signup-images {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .signup-images .img-item {
+            border-radius: 16px;
+            overflow: hidden;
+            background-color: var(--bg-card);
+        }
+
+        .signup-images .img-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .signup-images .img-item:nth-child(5) {
+            grid-column: span 2;
+        }
+
+        .signup-form-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .signup-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .signup-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+
+        .signup-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .progress-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            gap: 0.5rem;
+        }
+
+        .progress-steps .step-text {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .progress-bar {
+            display: flex;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .progress-segment {
+            height: 3px;
+            width: 100px;
+            background-color: var(--bg-card);
+            border-radius: 2px;
+        }
+
+        .progress-segment.active {
+            background-color: var(--accent-yellow);
+        }
+
+        .signup-form {
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .input-group .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: none;
+            border-radius: 25px;
+            background-color: #ffffff;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .input-group input::placeholder {
+            color: #999;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-yellow);
+        }
+
+        .btn-continue {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--accent-yellow);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-continue:hover {
+            background-color: var(--accent-orange);
+        }
+
+        .verification-info {
+            background-color: rgba(74, 222, 128, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .verification-info .info-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .verification-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .verification-info .time-note {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .document-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .doc-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .doc-option:hover {
+            background-color: var(--bg-card-hover);
+        }
+
+        .doc-option.selected {
+            border-color: var(--accent-yellow);
+        }
+
+        .doc-option-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .doc-option-icon {
+            font-size: 1.25rem;
+        }
+
+        .doc-option-text h4 {
+            font-weight: 500;
+            margin-bottom: 0.15rem;
+        }
+
+        .doc-option-text span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .doc-option-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-muted);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .doc-option.selected .doc-option-radio {
+            border-color: var(--accent-yellow);
+        }
+
+        .doc-option.selected .doc-option-radio::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-yellow);
+            border-radius: 50%;
+        }
+
+        .pending-section {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .timer-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .timer-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .pending-section h2 {
+            color: var(--accent-yellow);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .status-item .status-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-item .status-icon.checked {
+            color: var(--accent-green);
+        }
+
+        .status-item .status-icon.pending {
+            color: var(--text-muted);
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @media (max-width: 992px) {
+            .signup-container {
+                grid-template-columns: 1fr;
+            }
+
+            .signup-images {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="signup-page">
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <img src="/assets/icons/navbar_logo.png" alt="Moto Logo">
+            <span class="nav-brand-text">Moto Marketplace</span>
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/marketplace">Marketplace</a>
+            <a href="/tools">Services</a>
+            <a href="/upload">Rentals</a>
+            <a href="/register" class="btn-signup-nav">👤 Sign Up</a>
+        </div>
+    </nav>
+
+    <div class="signup-container">
+        <div class="signup-images">
+            <div class="img-item">
+                <img src="/assets/moto-images/main_page_img.png" alt="Motorcycle 1">
+            </div>
+            <div class="img-item">
+                <img src="/assets/moto-images/main_page_img2.png" alt="Motorcycle 2">
+            </div>
+            <div class="img-item">
+                <img src="/assets/moto-images/main_page_img3.png" alt="Motorcycle 3">
+            </div>
+            <div class="img-item">
+                <img src="/assets/moto-images/main_page_img4.png" alt="Motorcycle 4">
+            </div>
+            <div class="img-item">
+                <img src="/assets/moto-images/main_page_img5.png" alt="Motorcycle 5">
+            </div>
+        </div>
+
+        <div class="signup-form-section">
+            <div class="step active" id="step1">
+                <div class="signup-header">
+                    <h1>Create Account</h1>
+                    <p>Create Your Trust Profile</p>
+                    <div class="progress-steps">
+                        <span class="step-text">Step 1 of 3</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-segment active"></div>
+                        <div class="progress-segment"></div>
+                        <div class="progress-segment"></div>
+                    </div>
+                </div>
+
+                <form class="signup-form" id="form-step1">
+                    <div class="input-group">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="username" placeholder="Username" required>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-icon">✉️</span>
+                        <input type="email" id="email" placeholder="Email Address" required>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="password" placeholder="Password" required>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="confirm-password" placeholder="Confirm Password" required>
+                    </div>
+                    <button type="submit" class="btn-continue">Continue</button>
+                </form>
+                <div id="step1-message" class="message" style="margin-top: 1rem;"></div>
+            </div>
+
+            <div class="step" id="step2">
+                <div class="signup-header">
+                    <h1>Create Account</h1>
+                    <div class="progress-steps">
+                        <span class="step-text">Step 2 of 3</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-segment active"></div>
+                        <div class="progress-segment active"></div>
+                        <div class="progress-segment"></div>
+                    </div>
+                </div>
+
+                <div class="signup-form">
+                    <div class="verification-info">
+                        <div class="info-header">
+                            <span>🛡️</span>
+                            <strong>Why we need this</strong>
+                        </div>
+                        <p>We verify all users to ensure a safe marketplace for everyone</p>
+                        <div class="time-note">
+                            <span>⏱️</span>
+                            <span>Verification takes &lt;24hours</span>
+                        </div>
+                    </div>
+
+                    <div class="document-options">
+                        <div class="doc-option" data-doc="license" onclick="selectDocument(this)">
+                            <div class="doc-option-info">
+                                <span class="doc-option-icon">🪪</span>
+                                <div class="doc-option-text">
+                                    <h4>Driver's License</h4>
+                                    <span>Category A/A1</span>
+                                </div>
+                            </div>
+                            <div class="doc-option-radio"></div>
+                        </div>
+                        <div class="doc-option" data-doc="passport" onclick="selectDocument(this)">
+                            <div class="doc-option-info">
+                                <span class="doc-option-icon">📄</span>
+                                <div class="doc-option-text">
+                                    <h4>ID / Passport</h4>
+                                    <span>Government-issue</span>
+                                </div>
+                            </div>
+                            <div class="doc-option-radio"></div>
+                        </div>
+                        <div class="doc-option" data-doc="selfie" onclick="selectDocument(this)">
+                            <div class="doc-option-info">
+                                <span class="doc-option-icon">📸</span>
+                                <div class="doc-option-text">
+                                    <h4>Live Selfie</h4>
+                                    <span>For verification</span>
+                                </div>
+                            </div>
+                            <div class="doc-option-radio"></div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-continue" onclick="goToStep3()">Submit Document</button>
+                </div>
+            </div>
+
+            <div class="step" id="step3">
+                <div class="signup-header">
+                    <div class="progress-bar" style="margin-bottom: 2rem;">
+                        <div class="progress-segment active"></div>
+                        <div class="progress-segment active"></div>
+                        <div class="progress-segment active"></div>
+                    </div>
+                </div>
+
+                <div class="pending-section">
+                    <div class="timer-icon">
+                        <img src="/assets/timer/timer2.png" alt="Verification Timer">
+                    </div>
+                    <h2>Verification Pending</h2>
+
+                    <div class="status-list">
+                        <div class="status-item">
+                            <span class="status-icon checked">☑️</span>
+                            <span>Document Received</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-icon checked">☑️</span>
+                            <span>Document Received</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-icon pending">⭕</span>
+                            <span>Document Received</span>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-continue" onclick="completeSignup()">Submit Document</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedDocument = null;
+
+        document.getElementById('form-step1').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageDiv = document.getElementById('step1-message');
+            
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (password !== confirmPassword) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = 'Passwords do not match';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.className = 'message success';
+                    messageDiv.textContent = 'Account created! Proceeding to verification...';
+                    setTimeout(() => {
+                        document.getElementById('step1').classList.remove('active');
+                        document.getElementById('step2').classList.add('active');
+                    }, 1000);
+                } else {
+                    messageDiv.className = 'message error';
+                    messageDiv.textContent = data.error || 'Registration failed';
+                }
+            } catch (err) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = 'An error occurred';
+            }
+        });
+
+        function selectDocument(element) {
+            document.querySelectorAll('.doc-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedDocument = element.dataset.doc;
+        }
+
+        function goToStep3() {
+            if (!selectedDocument) {
+                alert('Please select a document type');
+                return;
+            }
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step3').classList.add('active');
+        }
+
+        function completeSignup() {
+            alert('Verification in progress. You will be notified when verified.');
+            window.location.href = '/login';
+        }
+    </script>
+
+    <style>
+        .btn-signup-nav {
+            background-color: var(--accent-yellow);
+            color: var(--bg-primary) !important;
+            padding: 0.6rem 1.25rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-signup-nav:hover {
+            background-color: var(--accent-orange);
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Moto Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .login-page {
+            min-height: 100vh;
+            background-color: var(--bg-primary);
+        }
+
+        .login-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: calc(100vh - 80px);
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 3rem;
+        }
+
+        .login-images {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .login-images .img-item {
+            border-radius: 16px;
+            overflow: hidden;
+            background-color: var(--bg-card);
+        }
+
+        .login-images .img-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .login-images .img-item:nth-child(5) {
+            grid-column: span 2;
+        }
+
+        .login-form-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-style: italic;
+            color: var(--accent-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .login-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .input-group .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: none;
+            border-radius: 25px;
+            background-color: #ffffff;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .input-group input::placeholder {
+            color: #999;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-green);
+        }
+
+        .btn-signin {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--accent-green);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-signin:hover {
+            background-color: var(--accent-green-dark);
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .login-footer a {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        .btn-signup-nav {
+            background-color: var(--accent-yellow);
+            color: var(--bg-primary) !important;
+            padding: 0.6rem 1.25rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-signup-nav:hover {
+            background-color: var(--accent-orange);
+        }
+
+        @media (max-width: 992px) {
+            .login-container {
+                grid-template-columns: 1fr;
+            }
+
+            .login-images {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="login-page">
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <img src="/assets/icons/navbar_logo.png" alt="Moto Logo">
+            <span class="nav-brand-text">Moto Marketplace</span>
+        </a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/marketplace">Marketplace</a>
+            <a href="/tools">Services</a>
+            <a href="/upload">Rentals</a>
+            <a href="/register" class="btn-signup-nav">👤 Sign Up</a>
+        </div>
+    </nav>
+
+    <div class="login-container">
+        <div class="login-images">
+            <div class="img-item">
+                <img src="/assets/moto-images/main_page_img.png" alt="Motorcycle 1">
+            </div>
+            <div class="img-item">
+                <img src="/assets/moto-images/main_page_img2.png" alt="Motorcycle 2">
+            </div>
+            <div class="img-item">
+                <img src="/assets/moto-images/main_page_img3.png" alt="Motorcycle 3">
+            </div>
+            <div class="img-item">
+                <img src="/assets/moto-images/main_page_img4.png" alt="Motorcycle 4">
+            </div>
+            <div class="img-item">
+                <img src="/assets/moto-images/main_page_img5.png" alt="Motorcycle 5">
+            </div>
+        </div>
+
+        <div class="login-form-section">
+            <div class="login-header">
+                <h1>Welcome Back</h1>
+                <p>Sign in to your account</p>
+            </div>
+
+            <form class="login-form" id="login-form">
+                <div class="input-group">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="username" placeholder="Username" required>
+                </div>
+                <div class="input-group">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn-signin">Sign In</button>
+            </form>
+
+            <p class="login-footer">
+                Don't have an account? <a href="/register">Create one</a>
+            </p>
+            
+            <div id="message" class="message" style="margin-top: 1rem; max-width: 400px; margin-left: auto; margin-right: auto;"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageDiv = document.getElementById('message');
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    messageDiv.className = 'message success';
+                    messageDiv.textContent = 'Login successful! Redirecting...';
+                    setTimeout(() => window.location.href = '/dashboard', 1000);
+                } else {
+                    messageDiv.className = 'message error';
+                    messageDiv.textContent = data.message || 'Login failed';
+                }
+            } catch (err) {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = 'An error occurred';
+            }
+        });
+    </script>
+</body>
+</html>
+
