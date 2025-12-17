@@ -2,8 +2,6 @@
 
 A motorcycle marketplace web application built for educational purposes to demonstrate common web security vulnerabilities.
 
-> ⚠️ **WARNING**: This application contains intentional security vulnerabilities. Do NOT deploy this application in a production environment.
-
 ## 🛠️ Tech Stack
 
 - **Backend**: Node.js + Express
