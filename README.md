@@ -278,9 +278,3 @@ Recommended tools for testing:
 - **Burp Suite** - Web security testing
 - **SQLmap** - SQL injection testing
 - **Nikto** - Web server scanner
-
----
-
-## 📝 License
-
-This project is for educational purposes only. Use responsibly.
