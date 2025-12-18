@@ -3,7 +3,9 @@ const session = require('express-session');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 const db = require('./database/db');
 
 const app = express();
@@ -17,18 +19,94 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/assets', express.static(path.join(__dirname, 'database', 'assets')));
 
 app.use(session({
-    secret: 'your-secret-key-here',
+    secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { 
-        secure: false,
-        maxAge: 24 * 60 * 60 * 1000
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'strict'
     }
 }));
 
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
+//for csrf protection
+function generateCSRFToken(){
+    return crypto.randomBytes(32).toString('hex');
+}
+
+function validateCSRFToken(req, res, next){
+    if(req.method == 'GET'){
+        return next(); //skipping get requests
+    }
+
+    if(req.path == '/api/logout'){
+        return next(); // skipping logout calls
+    }
+
+    const token = req.body._csrf || req.headers['x-csrf-token'];
+    const sessionToken = req.session.csrfToken;
+
+    if(!token || !sessionToken || token !== sessionToken){
+        return res.status(403).json({ error: 'Invalid CSRF token'});
+    }
+
+    next();
+}
+
+// Initialize CSRF token for authenticated users
+app.use((req, res, next) => {
+    if (req.session.isAuthenticated && !req.session.csrfToken) {
+        req.session.csrfToken = generateCSRFToken();
+    }
+    next();
+});
+
+// CSRF token endpoint
+app.get('/api/csrf-token', (req, res) => {
+    if (!req.session.csrfToken) {
+        req.session.csrfToken = generateCSRFToken();
+    }
+    res.json({ csrfToken: req.session.csrfToken });
+});
+
+//sanitization of input
+
+function sanitizeInput(input) {
+    if(typeof input !== 'string') return input;
+    return input.trim().replace(/[<>]/g, '');
+}
+
+function validateEmail(email){ //email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+}
+
+function validateHostname(hostname){ //host validation
+    const hostnameRegex = /^[a-zA-Z0-9.-]+(:[0-9]+)?$/;
+    return hostnameRegex.test(hostname) && hostname.length <= 253;
+}
+
+function validateDomain(domain){//for domain validation
+    const domainRegex = /^[a-zA-Z0-9.-]+(:[0-9]+)?$/;
+    return domainRegex.test(domain) && domain.length <= 253;
+}
+ //additional security for file upload
+
+ const uploadsDir = path.join(__dirname, 'uploads');
+ if(!fs.existsSync(uploadsDir)){
+    fs.mkdirSync(uploadsDir, {recursive: true});
+ }
+
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+function sanitizeFilename(filename) {
+    return filename
+        .replace(/\.\./g, '')
+        .replace(/[\/\\]/g, '')
+        .replace(/[^a-zA-Z0-9._-]/g, '_')
+        .substring(0, 255);
 }
 
 const storage = multer.diskStorage({
@@ -36,56 +114,153 @@ const storage = multer.diskStorage({
         cb(null, uploadsDir);
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname);
+        const sanitized = sanitizeFilename(file.originalname);
+        const ext = path.extname(sanitized);
+        const name = path.basename(sanitized, ext);
+        cb(null, Date.now() + '-' + name + ext);
     }
 });
 
-const upload = multer({ storage: storage });
+//mime types verification
+const ALLOWED_MIME_TYPES = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+    'text/plain'
+]; //allowed file types
 
+const fileFilter = (req, file, cb) => {
+    if(ALLOWED_MIME_TYPES.includes(file.mimetype)){
+        cb(null, true);
+    } else{
+        cb(new Error('File type is not allowed'), false);
+    }
+};//checking file type when user uploads it
+
+const upload = multer(
+    {
+        storage: storage,
+        fileFilter: fileFilter,
+        limits: {
+            fileSize: MAX_FILE_SIZE
+        }
+    }
+); //upload function
+
+
+
+
+
+
+
+// Routes
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-app.post('/api/login', (req, res) => {
+// FIXED: SQL Injection - Using parameterized queries
+app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
-    const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
     
-    db.get(query, [], (err, user) => {
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+    }
+    
+    const sanitizedUsername = sanitizeInput(username);
+    
+    // Use parameterized query to prevent SQL injection
+    const query = `SELECT * FROM users WHERE username = ?`;
+    
+    db.get(query, [sanitizedUsername], async (err, user) => {
         if (err) {
             console.error('Login error:', err);
             return res.status(500).json({ error: 'Database error' });
         }
         
         if (user) {
-            req.session.userId = user.id;
-            req.session.username = user.username;
-            req.session.role = user.role;
-            req.session.isAuthenticated = true;
-            
-            res.json({ 
-                success: true, 
-                message: 'Login successful',
-                user: { id: user.id, username: user.username, role: user.role }
-            });
+            // Compare hashed password
+            try {
+                const passwordMatch = await bcrypt.compare(password, user.password);
+                if (passwordMatch) {
+                    req.session.userId = user.id;
+                    req.session.username = user.username;
+                    req.session.role = user.role;
+                    req.session.isAuthenticated = true;
+                    req.session.csrfToken = generateCSRFToken();
+                    
+                    res.json({ 
+                        success: true, 
+                        message: 'Login successful',
+                        user: { id: user.id, username: user.username, role: user.role }
+                    });
+                } else {
+                    res.status(401).json({ success: false, message: 'Invalid credentials' });
+                }
+            } catch (err) {
+                // If password is not hashed (for existing users), check plain text
+                if (user.password === password) {
+                    // Hash the password for future use
+                    const hashedPassword = await bcrypt.hash(password, 10);
+                    db.run('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, user.id]);
+                    
+                    req.session.userId = user.id;
+                    req.session.username = user.username;
+                    req.session.role = user.role;
+                    req.session.isAuthenticated = true;
+                    req.session.csrfToken = generateCSRFToken();
+                    
+                    res.json({ 
+                        success: true, 
+                        message: 'Login successful',
+                        user: { id: user.id, username: user.username, role: user.role }
+                    });
+                } else {
+                    res.status(401).json({ success: false, message: 'Invalid credentials' });
+                }
+            }
         } else {
             res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
     });
 });
 
-app.post('/api/register', (req, res) => {
+// FIXED: SQL Injection - Using parameterized queries + Password Hashing
+app.post('/api/register', async (req, res) => {
     const { username, password, email } = req.body;
-    const query = `INSERT INTO users (username, password, email) VALUES ('${username}', '${password}', '${email}')`;
     
-    db.run(query, [], function(err) {
-        if (err) {
-            if (err.message.includes('UNIQUE constraint failed')) {
-                return res.status(400).json({ error: 'Username already exists' });
+    if (!username || !password || !email) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+    
+    if (!validateEmail(email)) {
+        return res.status(400).json({ error: 'Invalid email format' });
+    }
+    
+    const sanitizedUsername = sanitizeInput(username);
+    const sanitizedEmail = sanitizeInput(email);
+    
+    // Hash password before storing
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Use parameterized query to prevent SQL injection
+        const query = `INSERT INTO users (username, password, email) VALUES (?, ?, ?)`;
+        
+        db.run(query, [sanitizedUsername, hashedPassword, sanitizedEmail], function(err) {
+            if (err) {
+                if (err.message.includes('UNIQUE constraint failed')) {
+                    return res.status(400).json({ error: 'Username already exists' });
+                }
+                return res.status(500).json({ error: 'Registration failed' });
             }
-            return res.status(500).json({ error: 'Registration failed' });
-        }
-        res.json({ success: true, message: 'Registration successful', userId: this.lastID });
-    });
+            res.json({ success: true, message: 'Registration successful', userId: this.lastID });
+        });
+    } catch (err) {
+        console.error('Password hashing error:', err);
+        return res.status(500).json({ error: 'Registration failed' });
+    }
 });
 
 app.post('/api/logout', (req, res) => {
@@ -148,6 +323,11 @@ app.get('/api/posts/:id', (req, res) => {
     const postId = req.params.id;
     const userId = req.session.userId || 0;
     
+    // Validate postId is numeric
+    if (isNaN(postId)) {
+        return res.status(400).json({ error: 'Invalid post ID' });
+    }
+    
     const query = `
         SELECT posts.*, users.username 
         FROM posts 
@@ -166,7 +346,8 @@ app.get('/api/posts/:id', (req, res) => {
     });
 });
 
-app.post('/api/posts', (req, res) => {
+// FIXED: CSRF Protection added
+app.post('/api/posts', validateCSRFToken, (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
@@ -174,9 +355,16 @@ app.post('/api/posts', (req, res) => {
     const { title, content, is_private } = req.body;
     const userId = req.session.userId;
     
+    if (!title || !content) {
+        return res.status(400).json({ error: 'Title and content are required' });
+    }
+    
+    const sanitizedTitle = sanitizeInput(title);
+    const sanitizedContent = sanitizeInput(content);
+    
     const query = `INSERT INTO posts (user_id, title, content, is_private) VALUES (?, ?, ?, ?)`;
     
-    db.run(query, [userId, title, content, is_private ? 1 : 0], function(err) {
+    db.run(query, [userId, sanitizedTitle, sanitizedContent, is_private ? 1 : 0], function(err) {
         if (err) {
             return res.status(500).json({ error: 'Failed to create post' });
         }
@@ -184,7 +372,8 @@ app.post('/api/posts', (req, res) => {
     });
 });
 
-app.put('/api/posts/:id', (req, res) => {
+// FIXED: CSRF Protection added
+app.put('/api/posts/:id', validateCSRFToken, (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
@@ -193,9 +382,20 @@ app.put('/api/posts/:id', (req, res) => {
     const userId = req.session.userId;
     const { title, content, is_private } = req.body;
     
+    if (isNaN(postId)) {
+        return res.status(400).json({ error: 'Invalid post ID' });
+    }
+    
+    if (!title || !content) {
+        return res.status(400).json({ error: 'Title and content are required' });
+    }
+    
+    const sanitizedTitle = sanitizeInput(title);
+    const sanitizedContent = sanitizeInput(content);
+    
     const query = `UPDATE posts SET title = ?, content = ?, is_private = ? WHERE id = ? AND user_id = ?`;
     
-    db.run(query, [title, content, is_private ? 1 : 0, postId, userId], function(err) {
+    db.run(query, [sanitizedTitle, sanitizedContent, is_private ? 1 : 0, postId, userId], function(err) {
         if (err) {
             return res.status(500).json({ error: 'Failed to update post' });
         }
@@ -206,13 +406,18 @@ app.put('/api/posts/:id', (req, res) => {
     });
 });
 
-app.delete('/api/posts/:id', (req, res) => {
+// FIXED: CSRF Protection added
+app.delete('/api/posts/:id', validateCSRFToken, (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
     
     const postId = req.params.id;
     const userId = req.session.userId;
+    
+    if (isNaN(postId)) {
+        return res.status(400).json({ error: 'Invalid post ID' });
+    }
     
     const query = `DELETE FROM posts WHERE id = ? AND user_id = ?`;
     
@@ -230,6 +435,10 @@ app.delete('/api/posts/:id', (req, res) => {
 app.get('/api/posts/:postId/comments', (req, res) => {
     const postId = req.params.postId;
     
+    if (isNaN(postId)) {
+        return res.status(400).json({ error: 'Invalid post ID' });
+    }
+    
     const query = `
         SELECT comments.*, users.username 
         FROM comments 
@@ -246,7 +455,8 @@ app.get('/api/posts/:postId/comments', (req, res) => {
     });
 });
 
-app.post('/api/posts/:postId/comments', (req, res) => {
+// FIXED: CSRF Protection added
+app.post('/api/posts/:postId/comments', validateCSRFToken, (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
@@ -255,9 +465,19 @@ app.post('/api/posts/:postId/comments', (req, res) => {
     const { content } = req.body;
     const userId = req.session.userId;
     
+    if (isNaN(postId)) {
+        return res.status(400).json({ error: 'Invalid post ID' });
+    }
+    
+    if (!content) {
+        return res.status(400).json({ error: 'Comment content is required' });
+    }
+    
+    const sanitizedContent = sanitizeInput(content);
+    
     const query = `INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)`;
     
-    db.run(query, [postId, userId, content], function(err) {
+    db.run(query, [postId, userId, sanitizedContent], function(err) {
         if (err) {
             return res.status(500).json({ error: 'Failed to add comment' });
         }
@@ -265,6 +485,7 @@ app.post('/api/posts/:postId/comments', (req, res) => {
     });
 });
 
+// FIXED: SQL Injection - Using parameterized queries
 app.get('/api/search', (req, res) => {
     const searchTerm = req.query.q;
     
@@ -272,16 +493,21 @@ app.get('/api/search', (req, res) => {
         return res.json([]);
     }
     
+    const sanitizedSearchTerm = sanitizeInput(searchTerm);
+    
+    // Use parameterized query with LIKE
     const query = `
         SELECT posts.*, users.username 
         FROM posts 
         JOIN users ON posts.user_id = users.id 
         WHERE posts.is_private = 0 
-        AND (posts.title LIKE '%${searchTerm}%' OR posts.content LIKE '%${searchTerm}%')
+        AND (posts.title LIKE ? OR posts.content LIKE ?)
         ORDER BY posts.created_at DESC
     `;
     
-    db.all(query, [], (err, posts) => {
+    const searchPattern = `%${sanitizedSearchTerm}%`;
+    
+    db.all(query, [searchPattern, searchPattern], (err, posts) => {
         if (err) {
             console.error('Search error:', err);
             return res.status(500).json({ error: 'Search failed' });
@@ -290,13 +516,14 @@ app.get('/api/search', (req, res) => {
     });
 });
 
-app.post('/api/upload', upload.single('file'), (req, res) => {
+// FIXED: File Upload Vulnerability - File type validation, size limits, filename sanitization
+app.post('/api/upload', validateCSRFToken, upload.single('file'), (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
     
     if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+        return res.status(400).json({ error: 'No file uploaded or file type not allowed' });
     }
     
     const userId = req.session.userId;
@@ -316,6 +543,8 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
         file.mimetype
     ], function(err) {
         if (err) {
+            // Delete uploaded file if database save fails
+            fs.unlink(file.path, () => {});
             return res.status(500).json({ error: 'Failed to save file info' });
         }
         res.json({ 
@@ -343,7 +572,8 @@ app.get('/api/files', (req, res) => {
     });
 });
 
-app.post('/api/tools/ping', (req, res) => {
+// FIXED: Command Injection - Input validation and sanitization
+app.post('/api/tools/ping', validateCSRFToken, (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
@@ -354,20 +584,67 @@ app.post('/api/tools/ping', (req, res) => {
         return res.status(400).json({ error: 'Host is required' });
     }
     
-    const isWindows = process.platform === 'win32';
-    const command = isWindows ? `ping -n 4 ${host}` : `ping -c 4 ${host}`;
+    // Validate hostname to prevent command injection
+    if (!validateHostname(host)) {
+        return res.status(400).json({ error: 'Invalid hostname format' });
+    }
     
-    exec(command, { timeout: 10000 }, (error, stdout, stderr) => {
-        res.json({
-            success: !error,
-            command: command,
-            output: stdout || stderr || (error ? error.message : 'No output'),
-            error: error ? error.message : null
-        });
+    const isWindows = process.platform === 'win32';
+    
+    const command = isWindows ? 'ping' : 'ping';
+    const args = isWindows ? ['-n', '4', host] : ['-c', '4', host];
+    
+    const childProcess = spawn(command, args);
+    
+    let stdout = '';
+    let stderr = '';
+    let timeoutId = setTimeout(() => {
+        childProcess.kill();
+        if (!res.headersSent) {
+            res.json({
+                success: false,
+                command: `${command} ${args.join(' ')}`,
+                output: 'Command timed out after 10 seconds',
+                error: 'Command timed out'
+            });
+        }
+    }, 10000);
+    
+    childProcess.stdout.on('data', (data) => {
+        stdout += data.toString();
+    });
+    
+    childProcess.stderr.on('data', (data) => {
+        stderr += data.toString();
+    });
+    
+    childProcess.on('close', (code) => {
+        clearTimeout(timeoutId);
+        if (!res.headersSent) {
+            res.json({
+                success: code === 0,
+                command: `${command} ${args.join(' ')}`,
+                output: stdout || stderr || (code !== 0 ? `Process exited with code ${code}` : 'No output'),
+                error: code !== 0 ? `Process exited with code ${code}` : null
+            });
+        }
+    });
+    
+    childProcess.on('error', (error) => {
+        clearTimeout(timeoutId);
+        if (!res.headersSent) {
+            res.json({
+                success: false,
+                command: `${command} ${args.join(' ')}`,
+                output: error.message,
+                error: error.message
+            });
+        }
     });
 });
 
-app.post('/api/tools/nslookup', (req, res) => {
+
+app.post('/api/tools/nslookup', validateCSRFToken, (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
@@ -378,19 +655,66 @@ app.post('/api/tools/nslookup', (req, res) => {
         return res.status(400).json({ error: 'Domain is required' });
     }
     
-    const command = `nslookup ${domain}`;
+    // Validate domain to prevent command injection
+    if (!validateDomain(domain)) {
+        return res.status(400).json({ error: 'Invalid domain format' });
+    }
     
-    exec(command, { timeout: 10000 }, (error, stdout, stderr) => {
-        res.json({
-            success: !error,
-            command: command,
-            output: stdout || stderr || (error ? error.message : 'No output'),
-            error: error ? error.message : null
-        });
+    // Use spawn to prevent command injection
+    const command = 'nslookup';
+    const args = [domain];
+    
+    const childProcess = spawn(command, args);
+    
+    let stdout = '';
+    let stderr = '';
+    let timeoutId = setTimeout(() => {
+        childProcess.kill();
+        if (!res.headersSent) {
+            res.json({
+                success: false,
+                command: `${command} ${args.join(' ')}`,
+                output: 'Command timed out after 10 seconds',
+                error: 'Command timed out'
+            });
+        }
+    }, 10000);
+    
+    childProcess.stdout.on('data', (data) => {
+        stdout += data.toString();
+    });
+    
+    childProcess.stderr.on('data', (data) => {
+        stderr += data.toString();
+    });
+    
+    childProcess.on('close', (code) => {
+        clearTimeout(timeoutId);
+        if (!res.headersSent) {
+            res.json({
+                success: code === 0,
+                command: `${command} ${args.join(' ')}`,
+                output: stdout || stderr || (code !== 0 ? `Process exited with code ${code}` : 'No output'),
+                error: code !== 0 ? `Process exited with code ${code}` : null
+            });
+        }
+    });
+    
+    childProcess.on('error', (error) => {
+        clearTimeout(timeoutId);
+        if (!res.headersSent) {
+            res.json({
+                success: false,
+                command: `${command} ${args.join(' ')}`,
+                output: error.message,
+                error: error.message
+            });
+        }
     });
 });
 
-app.post('/api/tools/traceroute', (req, res) => {
+// FIXED: Command Injection - Input validation and sanitization
+app.post('/api/tools/traceroute', validateCSRFToken, (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
@@ -401,20 +725,67 @@ app.post('/api/tools/traceroute', (req, res) => {
         return res.status(400).json({ error: 'Host is required' });
     }
     
-    const isWindows = process.platform === 'win32';
-    const command = isWindows ? `tracert ${host}` : `traceroute ${host}`;
+    // Validate hostname to prevent command injection
+    if (!validateHostname(host)) {
+        return res.status(400).json({ error: 'Invalid hostname format' });
+    }
     
-    exec(command, { timeout: 30000 }, (error, stdout, stderr) => {
-        res.json({
-            success: !error,
-            command: command,
-            output: stdout || stderr || (error ? error.message : 'No output'),
-            error: error ? error.message : null
-        });
+    const isWindows = process.platform === 'win32';
+    // Use spawn to prevent command injection
+    const command = isWindows ? 'tracert' : 'traceroute';
+    const args = [host];
+    
+    const childProcess = spawn(command, args);
+    
+    let stdout = '';
+    let stderr = '';
+    let timeoutId = setTimeout(() => {
+        childProcess.kill();
+        if (!res.headersSent) {
+            res.json({
+                success: false,
+                command: `${command} ${args.join(' ')}`,
+                output: 'Command timed out after 30 seconds',
+                error: 'Command timed out'
+            });
+        }
+    }, 30000);
+    
+    childProcess.stdout.on('data', (data) => {
+        stdout += data.toString();
+    });
+    
+    childProcess.stderr.on('data', (data) => {
+        stderr += data.toString();
+    });
+    
+    childProcess.on('close', (code) => {
+        clearTimeout(timeoutId);
+        if (!res.headersSent) {
+            res.json({
+                success: code === 0,
+                command: `${command} ${args.join(' ')}`,
+                output: stdout || stderr || (code !== 0 ? `Process exited with code ${code}` : 'No output'),
+                error: code !== 0 ? `Process exited with code ${code}` : null
+            });
+        }
+    });
+    
+    childProcess.on('error', (error) => {
+        clearTimeout(timeoutId);
+        if (!res.headersSent) {
+            res.json({
+                success: false,
+                command: `${command} ${args.join(' ')}`,
+                output: error.message,
+                error: error.message
+            });
+        }
     });
 });
 
-app.post('/api/messages', (req, res) => {
+// FIXED: CSRF Protection added
+app.post('/api/messages', validateCSRFToken, (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
@@ -422,9 +793,20 @@ app.post('/api/messages', (req, res) => {
     const { receiver_id, subject, content } = req.body;
     const senderId = req.session.userId;
     
+    if (!receiver_id || !content) {
+        return res.status(400).json({ error: 'Receiver ID and content are required' });
+    }
+    
+    if (isNaN(receiver_id)) {
+        return res.status(400).json({ error: 'Invalid receiver ID' });
+    }
+    
+    const sanitizedSubject = subject ? sanitizeInput(subject) : '';
+    const sanitizedContent = sanitizeInput(content);
+    
     const query = `INSERT INTO messages (sender_id, receiver_id, subject, content) VALUES (?, ?, ?, ?)`;
     
-    db.run(query, [senderId, receiver_id, subject, content], function(err) {
+    db.run(query, [senderId, receiver_id, sanitizedSubject, sanitizedContent], function(err) {
         if (err) {
             return res.status(500).json({ error: 'Failed to send message' });
         }
@@ -466,6 +848,10 @@ app.get('/api/messages/:id', (req, res) => {
     const messageId = req.params.id;
     const userId = req.session.userId;
     
+    if (isNaN(messageId)) {
+        return res.status(400).json({ error: 'Invalid message ID' });
+    }
+    
     const query = `
         SELECT messages.*, 
                sender.username as sender_name, 
@@ -487,7 +873,8 @@ app.get('/api/messages/:id', (req, res) => {
     });
 });
 
-app.put('/api/profile', (req, res) => {
+// FIXED: CSRF Protection added + Password Hashing
+app.put('/api/profile', validateCSRFToken, async (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
@@ -499,16 +886,27 @@ app.put('/api/profile', (req, res) => {
     let params = [];
     
     if (username) {
+        const sanitizedUsername = sanitizeInput(username);
         updates.push('username = ?');
-        params.push(username);
+        params.push(sanitizedUsername);
     }
     if (email) {
+        if (!validateEmail(email)) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+        const sanitizedEmail = sanitizeInput(email);
         updates.push('email = ?');
-        params.push(email);
+        params.push(sanitizedEmail);
     }
     if (password) {
-        updates.push('password = ?');
-        params.push(password);
+        // Hash password before storing
+        try {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            updates.push('password = ?');
+            params.push(hashedPassword);
+        } catch (err) {
+            return res.status(500).json({ error: 'Failed to hash password' });
+        }
     }
     
     if (updates.length === 0) {
@@ -529,13 +927,20 @@ app.put('/api/profile', (req, res) => {
     });
 });
 
-app.post('/api/avatar', upload.single('avatar'), (req, res) => {
+// FIXED: File Upload Vulnerability - File type validation
+app.post('/api/avatar', validateCSRFToken, upload.single('avatar'), (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
     
     if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+        return res.status(400).json({ error: 'No file uploaded or file type not allowed' });
+    }
+    
+    // Additional validation for avatar (should be image only)
+    if (!req.file.mimetype.startsWith('image/')) {
+        fs.unlink(req.file.path, () => {});
+        return res.status(400).json({ error: 'Avatar must be an image file' });
     }
     
     const avatarPath = '/uploads/' + req.file.filename;
@@ -543,13 +948,15 @@ app.post('/api/avatar', upload.single('avatar'), (req, res) => {
     
     db.run('UPDATE users SET avatar = ? WHERE id = ?', [avatarPath, userId], function(err) {
         if (err) {
+            fs.unlink(req.file.path, () => {});
             return res.status(500).json({ error: 'Failed to update avatar' });
         }
         res.json({ success: true, avatar: avatarPath });
     });
 });
 
-app.post('/api/change-password', (req, res) => {
+// FIXED: CSRF Protection added + Password Hashing
+app.post('/api/change-password', validateCSRFToken, async (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
@@ -557,23 +964,42 @@ app.post('/api/change-password', (req, res) => {
     const { newPassword } = req.body;
     const userId = req.session.userId;
     
-    const query = `UPDATE users SET password = ? WHERE id = ?`;
+    if (!newPassword) {
+        return res.status(400).json({ error: 'New password is required' });
+    }
     
-    db.run(query, [newPassword, userId], function(err) {
-        if (err) {
-            return res.status(500).json({ error: 'Failed to change password' });
-        }
-        res.json({ success: true, message: 'Password changed successfully' });
-    });
+    // Hash password before storing
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const query = `UPDATE users SET password = ? WHERE id = ?`;
+        
+        db.run(query, [hashedPassword, userId], function(err) {
+            if (err) {
+                return res.status(500).json({ error: 'Failed to change password' });
+            }
+            res.json({ success: true, message: 'Password changed successfully' });
+        });
+    } catch (err) {
+        return res.status(500).json({ error: 'Failed to hash password' });
+    }
 });
 
-app.post('/api/transfer', (req, res) => {
+// FIXED: CSRF Protection added
+app.post('/api/transfer', validateCSRFToken, (req, res) => {
     if (!req.session.isAuthenticated) {
         return res.status(401).json({ error: 'Please login first' });
     }
     
     const { to_user, amount } = req.body;
     const fromUser = req.session.username;
+    
+    if (!to_user || !amount) {
+        return res.status(400).json({ error: 'Recipient and amount are required' });
+    }
+    
+    if (isNaN(to_user) || isNaN(amount)) {
+        return res.status(400).json({ error: 'Invalid user ID or amount' });
+    }
     
     res.json({ 
         success: true, 

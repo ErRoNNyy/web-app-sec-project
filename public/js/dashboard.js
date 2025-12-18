@@ -1,3 +1,11 @@
+// XSS Protection: HTML escaping function
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const authData = await requireAuth();
     if (!authData) return;
@@ -24,11 +32,11 @@ async function loadAllPosts() {
         container.innerHTML = posts.map(post => `
             <div class="post-card">
                 <h3>
-                    <a href="/post/${post.id}">${post.title}</a>
+                    <a href="/post/${post.id}">${escapeHtml(post.title)}</a>
                     ${post.is_private ? '<span class="private-badge">Private</span>' : ''}
                 </h3>
-                <p class="post-meta">By ${post.username} | ${formatDate(post.created_at)}</p>
-                <div class="post-content">${post.content}</div>
+                <p class="post-meta">By ${escapeHtml(post.username)} | ${formatDate(post.created_at)}</p>
+                <div class="post-content">${escapeHtml(post.content)}</div>
                 <div class="post-actions">
                     <button onclick="editPost(${post.id})" class="btn btn-small btn-secondary">Edit</button>
                     <button onclick="deletePost(${post.id})" class="btn btn-small" style="background: #e74c3c;">Delete</button>
@@ -54,10 +62,14 @@ function setupCreatePostForm() {
         const is_private = document.getElementById('post-private').checked;
         
         try {
+            const csrfToken = await getCSRFToken();
             const response = await fetch('/api/posts', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, content, is_private })
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
+                body: JSON.stringify({ title, content, is_private, _csrf: csrfToken })
             });
             
             const data = await response.json();
@@ -86,10 +98,14 @@ async function editPost(postId) {
     if (!newContent) return;
     
     try {
+        const csrfToken = await getCSRFToken();
         const response = await fetch(`/api/posts/${postId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: newTitle, content: newContent })
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken
+            },
+            body: JSON.stringify({ title: newTitle, content: newContent, _csrf: csrfToken })
         });
         
         const data = await response.json();
@@ -109,8 +125,14 @@ async function deletePost(postId) {
     if (!confirm('Are you sure you want to delete this post?')) return;
     
     try {
+        const csrfToken = await getCSRFToken();
         const response = await fetch(`/api/posts/${postId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken
+            },
+            body: JSON.stringify({ _csrf: csrfToken })
         });
         
         const data = await response.json();

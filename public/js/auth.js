@@ -1,7 +1,27 @@
+// CSRF Token Management
+let csrfToken = null;
+
+async function getCSRFToken() {
+    if (csrfToken) return csrfToken;
+    try {
+        const response = await fetch('/api/csrf-token');
+        const data = await response.json();
+        csrfToken = data.csrfToken;
+        return csrfToken;
+    } catch (err) {
+        console.error('Failed to get CSRF token:', err);
+        return null;
+    }
+}
+
 async function checkAuth() {
     try {
         const response = await fetch('/api/me');
         const data = await response.json();
+        if (data.isAuthenticated) {
+            // Get CSRF token when authenticated
+            await getCSRFToken();
+        }
         return data;
     } catch (err) {
         console.error('Auth check failed:', err);
@@ -33,6 +53,7 @@ async function logout() {
         const data = await response.json();
         
         if (data.success) {
+            csrfToken = null; // Clear CSRF token on logout
             window.location.href = '/login';
         }
     } catch (err) {

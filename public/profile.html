@@ -553,8 +553,13 @@
             formData.append('avatar', input.files[0]);
             
             try {
+                const csrfToken = await getCSRFToken();
+                formData.append('_csrf', csrfToken);
                 const response = await fetch('/api/avatar', {
                     method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    },
                     body: formData
                 });
                 

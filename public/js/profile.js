@@ -1,3 +1,11 @@
+// XSS Protection: HTML escaping function
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const authData = await requireAuth();
     if (!authData) return;
@@ -25,9 +33,14 @@ function setupProfileForm() {
         if (role) updateData.role = role;
         
         try {
+            const csrfToken = await getCSRFToken();
+            updateData._csrf = csrfToken;
             const response = await fetch('/api/profile', {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
                 body: JSON.stringify(updateData)
             });
             
@@ -73,10 +86,10 @@ function setupViewUserForm() {
             } else {
                 userInfoBox.innerHTML = `
                     <h3>User Information</h3>
-                    <p><strong>ID:</strong> ${user.id}</p>
-                    <p><strong>Username:</strong> ${user.username}</p>
-                    <p><strong>Email:</strong> ${user.email}</p>
-                    <p><strong>Role:</strong> ${user.role}</p>
+                    <p><strong>ID:</strong> ${escapeHtml(user.id)}</p>
+                    <p><strong>Username:</strong> ${escapeHtml(user.username)}</p>
+                    <p><strong>Email:</strong> ${escapeHtml(user.email)}</p>
+                    <p><strong>Role:</strong> ${escapeHtml(user.role)}</p>
                     <p><strong>Created:</strong> ${formatDate(user.created_at)}</p>
                 `;
             }

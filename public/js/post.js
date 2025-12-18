@@ -1,5 +1,13 @@
 let currentPostId = null;
 
+// XSS Protection: HTML escaping function
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const pathParts = window.location.pathname.split('/');
     currentPostId = pathParts[pathParts.length - 1];
@@ -34,13 +42,13 @@ async function loadPost() {
         
         container.innerHTML = `
             <h1>
-                ${post.title}
+                ${escapeHtml(post.title)}
                 ${post.is_private ? '<span class="private-badge">Private</span>' : ''}
             </h1>
             <p class="post-meta">
-                By <strong>${post.username}</strong> | ${formatDate(post.created_at)}
+                By <strong>${escapeHtml(post.username)}</strong> | ${formatDate(post.created_at)}
             </p>
-            <div class="post-content">${post.content}</div>
+            <div class="post-content">${escapeHtml(post.content)}</div>
         `;
         
         document.title = `${post.title} - VulneraBlog`;
@@ -65,9 +73,9 @@ async function loadComments() {
         
         container.innerHTML = comments.map(comment => `
             <div class="comment-item">
-                <div class="comment-author">${comment.username}</div>
+                <div class="comment-author">${escapeHtml(comment.username)}</div>
                 <div class="comment-date">${formatDate(comment.created_at)}</div>
-                <div class="comment-content">${comment.content}</div>
+                <div class="comment-content">${escapeHtml(comment.content)}</div>
             </div>
         `).join('');
         
@@ -86,10 +94,14 @@ function setupCommentForm() {
         const content = document.getElementById('comment-content').value;
         
         try {
+            const csrfToken = await getCSRFToken();
             const response = await fetch(`/api/posts/${currentPostId}/comments`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content })
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
+                body: JSON.stringify({ content, _csrf: csrfToken })
             });
             
             const data = await response.json();

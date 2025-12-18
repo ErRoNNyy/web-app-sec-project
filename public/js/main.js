@@ -14,11 +14,19 @@ async function loadPosts() {
             return;
         }
         
+        // XSS Protection: HTML escaping function
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
         container.innerHTML = posts.map(post => `
             <div class="post-card">
-                <h3><a href="/post/${post.id}">${post.title}</a></h3>
-                <p class="post-meta">By ${post.username} | ${formatDate(post.created_at)}</p>
-                <p class="post-excerpt">${truncate(post.content, 150)}</p>
+                <h3><a href="/post/${post.id}">${escapeHtml(post.title)}</a></h3>
+                <p class="post-meta">By ${escapeHtml(post.username)} | ${formatDate(post.created_at)}</p>
+                <p class="post-excerpt">${escapeHtml(truncate(post.content, 150))}</p>
             </div>
         `).join('');
         

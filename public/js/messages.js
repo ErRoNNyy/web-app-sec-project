@@ -1,3 +1,11 @@
+// XSS Protection: HTML escaping function
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const authData = await requireAuth();
     if (!authData) return;
@@ -19,10 +27,14 @@ function setupMessageForm() {
         const content = document.getElementById('content').value;
         
         try {
+            const csrfToken = await getCSRFToken();
             const response = await fetch('/api/messages', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ receiver_id, subject, content })
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
+                body: JSON.stringify({ receiver_id, subject, content, _csrf: csrfToken })
             });
             
             const data = await response.json();
@@ -67,13 +79,13 @@ function setupViewMessageForm() {
             } else {
                 detailBox.innerHTML = `
                     <h3>Message Details</h3>
-                    <p><strong>ID:</strong> ${message.id}</p>
-                    <p><strong>From:</strong> ${message.sender_name}</p>
-                    <p><strong>To:</strong> ${message.receiver_name}</p>
-                    <p><strong>Subject:</strong> ${message.subject || '(no subject)'}</p>
+                    <p><strong>ID:</strong> ${escapeHtml(message.id)}</p>
+                    <p><strong>From:</strong> ${escapeHtml(message.sender_name)}</p>
+                    <p><strong>To:</strong> ${escapeHtml(message.receiver_name)}</p>
+                    <p><strong>Subject:</strong> ${escapeHtml(message.subject || '(no subject)')}</p>
                     <p><strong>Date:</strong> ${formatDate(message.created_at)}</p>
                     <hr>
-                    <div class="message-body">${message.content}</div>
+                    <div class="message-body">${escapeHtml(message.content)}</div>
                 `;
             }
             detailBox.classList.add('active');
@@ -100,13 +112,13 @@ async function loadMessages() {
         container.innerHTML = messages.map(msg => `
             <div class="message-item">
                 <div class="message-header">
-                    <span class="message-subject">${msg.subject || '(no subject)'}</span>
+                    <span class="message-subject">${escapeHtml(msg.subject || '(no subject)')}</span>
                     <span class="message-date">${formatDate(msg.created_at)}</span>
                 </div>
                 <div class="message-parties">
-                    From: <strong>${msg.sender_name}</strong> → To: <strong>${msg.receiver_name}</strong>
+                    From: <strong>${escapeHtml(msg.sender_name)}</strong> → To: <strong>${escapeHtml(msg.receiver_name)}</strong>
                 </div>
-                <div class="message-content">${msg.content}</div>
+                <div class="message-content">${escapeHtml(msg.content)}</div>
             </div>
         `).join('');
         

@@ -86,10 +86,14 @@
             resultDiv.classList.add('active');
             
             try {
+                const csrfToken = await getCSRFToken();
                 const response = await fetch('/api/tools/ping', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ host })
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ host, _csrf: csrfToken })
                 });
                 
                 const data = await response.json();
@@ -108,10 +112,14 @@
             resultDiv.classList.add('active');
             
             try {
+                const csrfToken = await getCSRFToken();
                 const response = await fetch('/api/tools/nslookup', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ domain })
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ domain, _csrf: csrfToken })
                 });
                 
                 const data = await response.json();
@@ -130,10 +138,14 @@
             resultDiv.classList.add('active');
             
             try {
+                const csrfToken = await getCSRFToken();
                 const response = await fetch('/api/tools/traceroute', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ host })
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ host, _csrf: csrfToken })
                 });
                 
                 const data = await response.json();

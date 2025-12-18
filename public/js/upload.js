@@ -1,5 +1,13 @@
 let selectedFile = null;
 
+// XSS Protection: HTML escaping function
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const authData = await requireAuth();
     if (!authData) return;
@@ -79,8 +87,13 @@ function setupUploadForm() {
         formData.append('file', selectedFile);
         
         try {
+            const csrfToken = await getCSRFToken();
+            formData.append('_csrf', csrfToken);
             const response = await fetch('/api/upload', {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-Token': csrfToken
+                },
                 body: formData
             });
             
@@ -121,12 +134,12 @@ async function loadFiles() {
         
         container.innerHTML = files.map(file => `
             <div class="file-item">
-                <div class="file-name">${file.original_name}</div>
+                <div class="file-name">${escapeHtml(file.original_name)}</div>
                 <div class="file-info">
                     <p>Size: ${formatFileSize(file.file_size)}</p>
-                    <p>Type: ${file.mime_type || 'Unknown'}</p>
+                    <p>Type: ${escapeHtml(file.mime_type || 'Unknown')}</p>
                     <p>Uploaded: ${formatDate(file.created_at)}</p>
-                    <p><a href="/uploads/${file.filename}" target="_blank">View/Download</a></p>
+                    <p><a href="/uploads/${escapeHtml(file.filename)}" target="_blank">View/Download</a></p>
                 </div>
             </div>
         `).join('');
