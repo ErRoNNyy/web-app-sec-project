@@ -2,8 +2,6 @@
 
 A motorcycle marketplace web application built for educational purposes to demonstrate common web security vulnerabilities.
 
-> ⚠️ **WARNING**: This application contains intentional security vulnerabilities. Do NOT deploy this application in a production environment.
-
 ## 🛠️ Tech Stack
 
 - **Backend**: Node.js + Express
@@ -280,9 +278,3 @@ Recommended tools for testing:
 - **Burp Suite** - Web security testing
 - **SQLmap** - SQL injection testing
 - **Nikto** - Web server scanner
-
----
-
-## 📝 License
-
-This project is for educational purposes only. Use responsibly.
