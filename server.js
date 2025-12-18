@@ -881,7 +881,7 @@ app.put('/api/profile', validateCSRFToken, async (req, res) => {
     
     const { username, email, password } = req.body;
     const userId = req.session.userId;
-    
+
     let updates = [];
     let params = [];
     
